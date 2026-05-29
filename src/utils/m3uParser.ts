@@ -1,7 +1,7 @@
 import type { Channel } from '../types';
 
 // Set this to your Railway/Render proxy URL after deploying!
-const PROXY_URL = ''; // Replace with your proxy URL! (e.g., 'https://iptv-proxy.up.railway.app')
+const PROXY_URL = 'https://honest-insight-production-79ef.up.railway.app';
 
 // Use proxy if configured, otherwise use direct links
 function proxyStreamUrl(url: string): string {
