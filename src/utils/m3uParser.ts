@@ -1,22 +1,5 @@
 import type { Channel } from '../types';
 
-// Set this to your Railway/Render proxy URL after deploying!
-const PROXY_URL = 'https://honest-insight-production-79ef.up.railway.app';
-
-// Use proxy if configured, otherwise use direct links
-function proxyStreamUrl(url: string): string {
-  if (PROXY_URL) {
-    if (url.includes('ugeen.live:8080')) {
-      const path = url.replace('http://ugeen.live:8080', '');
-      return `${PROXY_URL}/proxy/ugeen${path}`;
-    } else if (url.includes('onib1.live:80')) {
-      const path = url.replace('http://onib1.live:80', '');
-      return `${PROXY_URL}/proxy/onib1${path}`;
-    }
-  }
-  return url;
-}
-
 export function parseM3U(content: string): Channel[] {
   const channels: Channel[] = [];
   const lines = content.split('\n');
@@ -60,8 +43,8 @@ export function parseM3U(content: string): Channel[] {
         currentInfo.category = category || 'غير مصنف';
       }
     } else if (line && !line.startsWith('#')) {
-      // This is a URL - use proxy
-      currentInfo.url = proxyStreamUrl(line);
+      // This is a URL - use direct connection
+      currentInfo.url = line;
       // Use a simple unique ID with channel index
       currentInfo.id = `channel-${channelIndex}`;
       
