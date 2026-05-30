@@ -64,12 +64,15 @@ export const VideoPlayer = ({ src, poster }: VideoPlayerProps) => {
         enableWorker: true,
         lowLatencyMode: false, // Disable low latency for better reliability
         debug: false,
-        maxBufferLength: 10,
-        maxMaxBufferLength: 20,
-        maxBufferSize: 10 * 1000 * 1000,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60,
+        maxBufferSize: 60 * 1000 * 1000,
         maxBufferHole: 0.5,
         startLevel: 0,
         enableSoftwareAES: true,
+        xhrSetup: (xhr) => {
+          xhr.timeout = 30000; // 30 second timeout
+        },
       });
       
       hlsRef.current.loadSource(src);

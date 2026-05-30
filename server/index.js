@@ -23,6 +23,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Test endpoint
+app.get('/test', (req, res) => {
+  res.json({ status: 'ok', message: 'Proxy server is running!' });
+});
+
 // Proxy middleware for HLS streams
 const streamProxy = createProxyMiddleware({
   target: 'http://ugeen.live:8080',
@@ -33,6 +38,7 @@ const streamProxy = createProxyMiddleware({
     proxyReq.removeHeader('Origin');
     // Set a real User-Agent
     proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
+    console.log(`🔀 Proxying request to: ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
   },
   onProxyRes: (proxyRes, req, res) => {
     // Add CORS headers
@@ -49,6 +55,8 @@ const streamProxy = createProxyMiddleware({
   pathRewrite: {
     '^/proxy/ugeen': '',
   },
+  timeout: 30000, // 30 second timeout
+  proxyTimeout: 30000,
 });
 
 const streamProxy2 = createProxyMiddleware({
@@ -59,6 +67,7 @@ const streamProxy2 = createProxyMiddleware({
     proxyReq.removeHeader('Origin');
     // Set a real User-Agent
     proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
+    console.log(`🔀 Proxying request to: ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
   },
   onProxyRes: (proxyRes, req, res) => {
     proxyRes.headers['Access-Control-Allow-Origin'] = '*';
@@ -74,6 +83,8 @@ const streamProxy2 = createProxyMiddleware({
   pathRewrite: {
     '^/proxy/onib1': '',
   },
+  timeout: 30000,
+  proxyTimeout: 30000,
 });
 
 // Apply proxy routes
