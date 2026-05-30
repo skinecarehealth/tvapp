@@ -50,7 +50,11 @@ const streamProxy = createProxyMiddleware({
   },
   onError: (err, req, res) => {
     console.error('❌ Proxy error:', err);
-    res.status(500).json({ error: 'Proxy error', details: err.message });
+    res.writeHead(500, {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    });
+    res.end(JSON.stringify({ error: 'Proxy error', details: err.message }));
   },
   pathRewrite: {
     '^/proxy/ugeen': '',
@@ -78,7 +82,11 @@ const streamProxy2 = createProxyMiddleware({
   },
   onError: (err, req, res) => {
     console.error('❌ Proxy error:', err);
-    res.status(500).json({ error: 'Proxy error', details: err.message });
+    res.writeHead(500, {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    });
+    res.end(JSON.stringify({ error: 'Proxy error', details: err.message }));
   },
   pathRewrite: {
     '^/proxy/onib1': '',
