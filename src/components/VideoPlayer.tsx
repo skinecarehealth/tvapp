@@ -63,17 +63,13 @@ export const VideoPlayer = ({ src, poster }: VideoPlayerProps) => {
       hlsRef.current = new Hls({
         enableWorker: true,
         lowLatencyMode: false, // Disable low latency for better reliability
-        debug: true, // Enable debug for now
+        debug: false,
         maxBufferLength: 10,
         maxMaxBufferLength: 20,
         maxBufferSize: 10 * 1000 * 1000,
         maxBufferHole: 0.5,
         startLevel: 0,
         enableSoftwareAES: true,
-        xhrSetup: (xhr) => {
-          xhr.withCredentials = false;
-          xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
-        }
       });
       
       hlsRef.current.loadSource(src);

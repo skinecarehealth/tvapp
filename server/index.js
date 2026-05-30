@@ -7,8 +7,15 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Enable CORS
-app.use(cors());
+// Enable CORS with all origins
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept']
+}));
+
+// Handle preflight OPTIONS requests
+app.options('*', cors());
 
 // Log all requests
 app.use((req, res, next) => {
@@ -32,6 +39,7 @@ const streamProxy = createProxyMiddleware({
     proxyRes.headers['Access-Control-Allow-Origin'] = '*';
     proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
     proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
+    proxyRes.headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Type';
     console.log(`📤 Response status: ${proxyRes.statusCode} for ${req.url}`);
   },
   onError: (err, req, res) => {
@@ -56,6 +64,7 @@ const streamProxy2 = createProxyMiddleware({
     proxyRes.headers['Access-Control-Allow-Origin'] = '*';
     proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
     proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
+    proxyRes.headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Type';
     console.log(`📤 Response status: ${proxyRes.statusCode} for ${req.url}`);
   },
   onError: (err, req, res) => {
