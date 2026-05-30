@@ -1,5 +1,8 @@
 import type { Channel } from '../types';
 
+// Set this to your cPanel proxy URL!
+const PROXY_URL = ''; // e.g., 'https://your-domain.com/proxy'
+
 export function parseM3U(content: string): Channel[] {
   const channels: Channel[] = [];
   const lines = content.split('\n');
@@ -43,8 +46,13 @@ export function parseM3U(content: string): Channel[] {
         currentInfo.category = category || 'غير مصنف';
       }
     } else if (line && !line.startsWith('#')) {
-      // This is a URL - use direct connection
-      currentInfo.url = line;
+      // This is a URL - use proxy if configured, otherwise direct
+      if (PROXY_URL) {
+        currentInfo.url = `${PROXY_URL}/${line}`;
+      } else {
+        currentInfo.url = line;
+      }
+      
       // Use a simple unique ID with channel index
       currentInfo.id = `channel-${channelIndex}`;
       

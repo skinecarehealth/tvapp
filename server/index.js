@@ -28,11 +28,29 @@ app.get('/test', (req, res) => {
   res.json({ status: 'ok', message: 'Proxy server is running!' });
 });
 
-// Proxy middleware for HLS streams
-const streamProxy = createProxyMiddleware({
-  target: 'http://ugeen.live:8080',
+// Generic proxy middleware - handles ANY stream URL!
+const genericProxy = createProxyMiddleware({
+  target: 'http://localhost', // Will be replaced dynamically
   changeOrigin: true,
   logLevel: 'debug',
+  router: (req) => {
+    // Extract target URL from the request path
+    const urlMatch = req.url.match(/^\/proxy\/(https?:\/\/.+)$/);
+    if (urlMatch) {
+      const targetUrl = new URL(urlMatch[1]);
+      return `${targetUrl.protocol}//${targetUrl.host}`;
+    }
+    return null;
+  },
+  pathRewrite: (path, req) => {
+    // Remove /proxy/ prefix and use the full target path
+    const urlMatch = path.match(/^\/proxy\/(https?:\/\/.+)$/);
+    if (urlMatch) {
+      const targetUrl = new URL(urlMatch[1]);
+      return targetUrl.pathname + targetUrl.search;
+    }
+    return path;
+  },
   onProxyReq: (proxyReq, req, res) => {
     // Remove Origin header to avoid CORS issues
     proxyReq.removeHeader('Origin');
@@ -56,48 +74,12 @@ const streamProxy = createProxyMiddleware({
     });
     res.end(JSON.stringify({ error: 'Proxy error', details: err.message }));
   },
-  pathRewrite: {
-    '^/proxy/ugeen': '',
-  },
   timeout: 30000, // 30 second timeout
   proxyTimeout: 30000,
 });
 
-const streamProxy2 = createProxyMiddleware({
-  target: 'http://onib1.live:80',
-  changeOrigin: true,
-  logLevel: 'debug',
-  onProxyReq: (proxyReq, req, res) => {
-    proxyReq.removeHeader('Origin');
-    // Set a real User-Agent
-    proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
-    console.log(`🔀 Proxying request to: ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
-  },
-  onProxyRes: (proxyRes, req, res) => {
-    proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-    proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-    proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
-    proxyRes.headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Type';
-    console.log(`📤 Response status: ${proxyRes.statusCode} for ${req.url}`);
-  },
-  onError: (err, req, res) => {
-    console.error('❌ Proxy error:', err);
-    res.writeHead(500, {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json'
-    });
-    res.end(JSON.stringify({ error: 'Proxy error', details: err.message }));
-  },
-  pathRewrite: {
-    '^/proxy/onib1': '',
-  },
-  timeout: 30000,
-  proxyTimeout: 30000,
-});
-
-// Apply proxy routes
-app.use('/proxy/ugeen', streamProxy);
-app.use('/proxy/onib1', streamProxy2);
+// Apply proxy route
+app.use('/proxy', genericProxy);
 
 // Serve static files from dist in production
 if (process.env.NODE_ENV === 'production') {
@@ -109,7 +91,6 @@ if (process.env.NODE_ENV === 'production') {
 
 app.listen(PORT, () => {
   console.log(`🚀 Proxy server running on http://localhost:${PORT}`);
-  console.log(`📺 Stream proxies available at:`);
-  console.log(`   - /proxy/ugeen -> http://ugeen.live:8080`);
-  console.log(`   - /proxy/onib1 -> http://onib1.live:80`);
+  console.log(`📺 Generic proxy available at /proxy/{stream-url}`);
+  console.log(`Example: /proxy/http://ugeen.live:8080/live/...`);
 });
